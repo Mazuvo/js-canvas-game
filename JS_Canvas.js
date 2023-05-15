@@ -10,6 +10,8 @@ canvas.height = window_height;
 
 canvas.style.background = "#ff8";
 
+var Rnd100 = 0;
+var Rnd4 = 0;
 
 class Circle {
     constructor(xpos, ypos, radius, color, text, speed){
@@ -65,9 +67,44 @@ class Circle {
         this.Ypos += this.dy;
 
     }
+    
+    Movement() {
+
+        if (Rnd100 == 0 || Rnd100 == null) {
+            Rnd100 = Random100Num();
+            Rnd4 = Random4Num();
+        }
+        
+        if (Rnd4 == 1) {
+            this.Xpos--;
+            Rnd100--;
+        }
+        else if (Rnd4 == 2) {
+            this.Xpos++;
+            Rnd100--;
+        }
+        else if (Rnd4 == 3) {
+            this.Ypos--;
+            Rnd100--;
+        }
+        else if (Rnd4 == 4) {
+            this.Ypos++;
+            Rnd100--;
+        }
+    }
 }
 
+let Random100Num = function() {
 
+    var Random = Math.floor(Math.random() * 100) + 1;
+    return Random; 
+}
+
+let Random4Num = function() {
+
+    var Random = Math.floor(Math.random() * 4) + 1;
+    return Random; 
+}
 
 let getDistance = function(xpos1, ypos1, xpos2, ypos2) {
 
@@ -79,15 +116,19 @@ let getDistance = function(xpos1, ypos1, xpos2, ypos2) {
 
 
 let my_circle1 = new Circle(300,650, 50, "black", "A", 0);
-let my_circle2 = new Circle(210, 300, 200, "black", "B", 0);
+let my_circle2 = new Circle(210, 300, 100, "black", "B", 0);
 
 
 my_circle1.draw(context);
 my_circle2.draw(context);
 
 
+
+
 let updateCircle = function() {
     requestAnimationFrame(updateCircle);
+
+    my_circle2.Movement();
 
     context.clearRect(0, 0, window_width, window_height);
 
@@ -104,9 +145,12 @@ let updateCircle = function() {
         my_circle2.Color = "black";
     }
 
+
 }
 
 updateCircle();
+
+
 
 
 function checkKey(e) {
@@ -123,35 +167,14 @@ function checkKey(e) {
        my_circle1.Xpos -= 10; //left
     }
     else if (e.keyCode === 68 && my_circle1.Xpos + my_circle1.Radius < window_width - 9) {
-       my_circle1.Xpos += 10;
+       my_circle1.Xpos += 10; //right
     }
 
 }
 document.addEventListener('keydown', checkKey);
 
-let Random100Num = function() {
-
-    var Random = Math.floor(Math.random() * 100) + 1;
-    return Random; 
-}
-
-let Random4Num = function() {
-
-    var Random = Math.floor(Math.random() * 4) + 1;
-    return Random; 
-}
 
 
 
-
-function Movement() {
-
-    let Random = Random100Num;
-    let 
-    for (let i = 0; i < Random; i++) {
-        my_circle2.
-    }
-
-}
 
 
