@@ -50,16 +50,24 @@ class Circle {
 
         if( (this.Xpos + this.Radius)> window_width) {
             this.dx = -this.dx;
+            Rnd100 = Random20Num();
+            Rnd4 = 1;
         }
         if( (this.Xpos - this.Radius)< 0) {
             this.dx = -this.dx;
+            Rnd100 = Random20Num();
+            Rnd4 = 2;
         }
 
         if( (this.Ypos + this.Radius)> window_height) {
             this.dy = -this.dy;
+            Rnd100 = Random20Num();
+            Rnd4 = 3;
         }
         if( (this.Ypos - this.Radius)< 0) {
             this.dy = -this.dy;
+            Rnd100 = Random20Num();
+            Rnd4 = 4;
         }
         
 
@@ -92,11 +100,18 @@ class Circle {
             Rnd100--;
         }
     }
+
 }
 
 let Random100Num = function() {
 
     var Random = Math.floor(Math.random() * 100) + 1;
+    return Random; 
+}
+
+let Random20Num = function() {
+
+    var Random = Math.floor(Math.random() * 20) + 20;
     return Random; 
 }
 
