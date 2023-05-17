@@ -13,12 +13,16 @@ canvas.style.background = "#ff8";
 var ob_count = 0;
 var tile_size = 50;
 var direction = null;
-var start = true;
+var counter = 0;
 
 var Map = [
     [1, 1, 1, 1, 1, 1, 1, 1, 1],
     [1, 0, 0, 0, 0, 0, 0, 0, 1],
-    [1, 0, 1, 1, 1, 1, 1, 0, 1],
+    [1, 0, 1, 1, 0, 1, 1, 0, 1],
+    [1, 0, 1, 1, 0, 1, 1, 0, 1],
+    [1, 0, 0, 0, 0, 0, 0, 0, 1],
+    [1, 0, 1, 1, 0, 1, 1, 0, 1],
+    [1, 0, 1, 1, 0, 1, 1, 0, 1],
     [1, 0, 0, 0, 0, 0, 0, 0, 1],
     [1, 1, 1, 1, 1, 1, 1, 1, 1]
 ];
@@ -55,7 +59,81 @@ class Circle {
 
         this.draw(context);
     }
+    Movement() {
+
+        if (Rnd100 == 0 || Rnd100 == null) {
+            Rnd100 = Random100Num();
+            Rnd4 = Random4Num();
+        }
+        
+        if (Rnd4 == 1) {
+            this.Xpos--;
+            Rnd100--;
+        }
+        else if (Rnd4 == 2) {
+            this.Xpos++;
+            Rnd100--;
+        }
+        else if (Rnd4 == 3) {
+            this.Ypos--;
+            Rnd100--;
+        }
+        else if (Rnd4 == 4) {
+            this.Ypos++;
+            Rnd100--;
+        }
+    }
 }
+
+class Enemi {
+    constructor(xpos, ypos, radius, color, map, speed ){
+
+        this.Xpos = xpos;
+        this.Ypos = ypos;
+        this.Radius = radius;
+        this.Color = color;
+        this.Map = map;
+        this.Speed = speed;
+
+        
+        this.dx = 0;
+        this.dy = 0;
+
+    }
+    draw(context){
+        context.beginPath();
+
+        context.strokeStyle = this.Color;
+
+        context.lineWidth = 5;
+        context.arc((tile_size * (this.Xpos + 0.5)), (tile_size * (this.Ypos + 0.5)), this.Radius, 0, Math.PI *2, false);
+        context.stroke();
+        context.closePath();
+    }
+    update() {
+
+        this.draw(context);
+        
+        if(Map[this.Ypos + this.dy][this.Xpos] == 0 && this.dy != 0) {}
+        else if(Map[this.Ypos][this.Xpos + this.dx] == 0 && this.dx != 0) {}
+        else Rnd4 = Random4Num();
+    }
+    Movement() { //dx + Xpos
+
+        //up
+        if (Rnd4 == 1) this.dy = -1;
+        //down
+        else if (Rnd4 == 2) this.dy = 1;
+        //left
+        else if (Rnd4 == 3) this.dx = -1;
+        //right
+        else if (Rnd4 == 4) this.dx = 1;
+
+        if(Map[this.Ypos + this.dy][this.Xpos] == 0 && this.dy != 0) this.Ypos = this.Ypos + this.dy;
+        else if(Map[this.Ypos][this.Xpos + this.dx] == 0 && this.dx != 0) this.Xpos = this.Xpos + this.dx;
+        else Rnd4 = Random4Num();
+    }
+} 
 
 
 class box {
@@ -85,6 +163,14 @@ class box {
 
 }
 
+let Random4Num = function() {
+
+    var Random = Math.floor(Math.random() * 4) + 1;
+    return Random; 
+}
+var Rnd4 = Random4Num();
+
+
 var objects = new box();
 
 function SetMap(Map) {
@@ -100,8 +186,11 @@ function SetMap(Map) {
     }
 }
 
-player = new Circle(1, 1, 25, "black", "P", Map);
+player = new Circle(1, 1, 25, "black", "P", Map, 1);
 player.draw(context);
+
+enemi = new Enemi(4, 4, 25, "black", Map);
+enemi.draw(context);
 
 SetMap(Map);
 
@@ -111,30 +200,24 @@ let getDistance = function(xpos1, ypos1, xpos2, ypos2) {
     return result; 
 }
 
-
-
-//let my_circle1 = new Circle(300,650, 50, "black", "A");
-//my_circle1.draw(context);
-
 let updateCircle = function() {
     requestAnimationFrame(updateCircle);
 
     context.clearRect(0, 0, window_width, window_height);
 
-    //my_circle1.update();
     player.update();
+    enemi.update();
+
+    if (counter == 100) {
+        enemi.Movement();
+        counter = 0;
+    }
+    else counter++;
+        
 
     for (let i = 0; i < ob_count; i++) {
         objects[i].update();
     }
-    /*
-    if (direction == "up" && my_circle1.Ypos + my_circle1.Radius > 0 + my_circle1.Radius + my_circle1.Radius) my_circle1.Ypos--;
-    else if (direction == "down" && my_circle1.Ypos + my_circle1.Radius < window_height - 5) my_circle1.Ypos++;
-    else if (direction == "left" && my_circle1.Xpos + my_circle1.Radius > 0 + my_circle1.Radius + my_circle1.Radius) my_circle1.Xpos--;
-    else if (direction == "right" && my_circle1.Xpos + my_circle1.Radius < window_width - 9) my_circle1.Xpos++;
-    */
-    
-
 
 }
 
@@ -145,23 +228,23 @@ function checkKey(e) {
 
     if (e.keyCode === 87 && Map[player.Ypos-1][player.Xpos] != 1) {
         direction = "up"; //up
-        player.Ypos -= 1;
+        player.Ypos--;
     }
     else if (e.keyCode === 83 && Map[player.Ypos+1][player.Xpos] != 1) {
         direction = "down"; //down
-        player.Ypos += 1;
+        player.Ypos++;
     }
     else if (e.keyCode === 65 && Map[player.Ypos][player.Xpos-1] != 1) {
         direction = "left"; //left
-        player.Xpos -= 1;
+        player.Xpos--;
     }
     else if (e.keyCode === 68 && Map[player.Ypos][player.Xpos+1] != 1) {
         direction = "right"; //right
-        player.Xpos += 1;
+        player.Xpos++;
     }
 
 }
-document.addEventListener('keydown', checkKey);
+document.addEventListener('keyup', checkKey);
 
 
 
