@@ -29,14 +29,26 @@ var Map = [
 
 
 class Circle {
-    constructor(xpos, ypos, radius, color, text, map, ){
+    constructor(radius, color, text, map, ){
 
-        this.Xpos = xpos;
-        this.Ypos = ypos;
+        this.Xpos = 0;
+        this.Ypos = 0;
         this.Radius = radius;
         this.Color = color;
         this.text = text;
         this.Map = map;
+
+    }
+    spawn(){
+        
+        do {
+
+            this.Xpos = RandomNum(Map[0].length -1);
+            this.Ypos = RandomNum(Map.length -1);
+
+        } while(Map[this.Ypos][this.Xpos] != 0)
+
+        this.Map[this.Ypos][this.Xpos] = 2;
 
     }
     draw(context){
@@ -59,37 +71,13 @@ class Circle {
 
         this.draw(context);
     }
-    Movement() {
-
-        if (Rnd100 == 0 || Rnd100 == null) {
-            Rnd100 = Random100Num();
-            Rnd4 = Random4Num();
-        }
-        
-        if (Rnd4 == 1) {
-            this.Xpos--;
-            Rnd100--;
-        }
-        else if (Rnd4 == 2) {
-            this.Xpos++;
-            Rnd100--;
-        }
-        else if (Rnd4 == 3) {
-            this.Ypos--;
-            Rnd100--;
-        }
-        else if (Rnd4 == 4) {
-            this.Ypos++;
-            Rnd100--;
-        }
-    }
 }
 
 class Enemi {
-    constructor(xpos, ypos, radius, color, map, speed ){
+    constructor(radius, color, map, speed ){
 
-        this.Xpos = xpos;
-        this.Ypos = ypos;
+        this.Xpos = null;
+        this.Ypos = null;
         this.Radius = radius;
         this.Color = color;
         this.Map = map;
@@ -98,6 +86,17 @@ class Enemi {
         
         this.dx = 0;
         this.dy = 0;
+
+    }
+    spawn(){
+        
+        do {
+
+            this.Xpos = RandomNum(Map[0].length -1);
+            this.Ypos = RandomNum(Map.length -1);
+
+        } while(Map[this.Ypos][this.Xpos] != 0 || player.Map[this.Ypos][this.Xpos] == 2)
+
 
     }
     draw(context){
@@ -116,22 +115,22 @@ class Enemi {
         
         if(Map[this.Ypos + this.dy][this.Xpos] == 0 && this.dy != 0) {}
         else if(Map[this.Ypos][this.Xpos + this.dx] == 0 && this.dx != 0) {}
-        else Rnd4 = Random4Num();
+        else Rnd = RandomNum(4);
     }
     Movement() { //dx + Xpos
 
         //up
-        if (Rnd4 == 1) this.dy = -1;
+        if (Rnd == 1) this.dy = -1;
         //down
-        else if (Rnd4 == 2) this.dy = 1;
+        else if (Rnd == 2) this.dy = 1;
         //left
-        else if (Rnd4 == 3) this.dx = -1;
+        else if (Rnd == 3) this.dx = -1;
         //right
-        else if (Rnd4 == 4) this.dx = 1;
+        else if (Rnd == 4) this.dx = 1;
 
         if(Map[this.Ypos + this.dy][this.Xpos] == 0 && this.dy != 0) this.Ypos = this.Ypos + this.dy;
         else if(Map[this.Ypos][this.Xpos + this.dx] == 0 && this.dx != 0) this.Xpos = this.Xpos + this.dx;
-        else Rnd4 = Random4Num();
+        else Rnd = RandomNum(4);
     }
 } 
 
@@ -163,12 +162,12 @@ class box {
 
 }
 
-let Random4Num = function() {
+let RandomNum = function(num) {
 
-    var Random = Math.floor(Math.random() * 4) + 1;
+    var Random = Math.floor(Math.random() * num) + 1;
     return Random; 
 }
-var Rnd4 = Random4Num();
+var Rnd = RandomNum(4);
 
 
 var objects = new box();
@@ -186,11 +185,14 @@ function SetMap(Map) {
     }
 }
 
-player = new Circle(1, 1, 25, "black", "P", Map, 1);
+player = new Circle(25, "black", "P", Map, 1);
+player.spawn();
 player.draw(context);
 
-enemi = new Enemi(4, 4, 25, "black", Map);
+enemi = new Enemi(25, "black", Map);
+enemi.spawn();
 enemi.draw(context);
+
 
 SetMap(Map);
 
