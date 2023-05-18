@@ -15,6 +15,8 @@ var coin_count = 0;
 var tile_size = 50;
 var direction = null;
 var counter = 0;
+var collected = 0;
+var roundend = false;
 
 var Map = [
     [1, 1, 1, 1, 1, 1, 1, 1, 1],
@@ -71,6 +73,8 @@ class Circle {
     update() {
 
         this.draw(context);
+        
+        WinEnd(collected);
     }
 }
 class Enemi {
@@ -165,6 +169,7 @@ class Coins {
         this.Xpos = xpos;
         this.Ypos = ypos;
         this.Picked = false;
+        this.Checked = false;
     }
     draw(context){
 
@@ -215,7 +220,7 @@ function SetMap(Map) {
     }
 }
 
-player = new Circle(22, "black", "P", 1);
+player = new Circle(22, "black");
 player.spawn();
 player.draw(context);
 
@@ -230,12 +235,6 @@ enemi1.draw(context);
 
 SetMap(Map);
 
-let getDistance = function(xpos1, ypos1, xpos2, ypos2) {
-
-    var result = Math.sqrt(Math.pow(xpos2 - xpos1, 2) + Math.pow(ypos2 - ypos1, 2));
-    return result; 
-}
-
 let updateCircle = function() {
     requestAnimationFrame(updateCircle);
 
@@ -246,14 +245,23 @@ let updateCircle = function() {
     }
     for (let i = 0; i < coin_count; i++) {
         object_coin[i].update();
+        if (object_coin[i].Picked == true && object_coin[i].Checked == false) {
+            collected++;
+            object_coin[i].Checked = true;
+        }
     }
+
+    context.font = "30px Arial";
+    context.fillStyle = "Black";
+    context.fillText(collected, tile_size * 0.5, tile_size * 0.5);
+    context.fillText(coin_count, tile_size * 1.5, tile_size * 0.5);
 
     player.update();
 
     enemi2.update();
     enemi1.update();
 
-    if (counter == 100) {
+    if (counter == 100 && roundend == false) {
         enemi1.Movement();
         enemi2.Movement();
         counter = 0;
@@ -266,26 +274,42 @@ function checkKey(e) {
 
     e = e || window.event;
 
-    if (e.keyCode === 87 && Map[player.Ypos-1][player.Xpos] != 1) {
-        direction = "up"; //up
-        player.Ypos--;
+    if (roundend == false) {
+        
+        if (e.keyCode === 87 && Map[player.Ypos-1][player.Xpos] != 1) {
+            direction = "up"; //up
+            player.Ypos--;
+        }
+        else if (e.keyCode === 83 && Map[player.Ypos+1][player.Xpos] != 1) {
+            direction = "down"; //down
+            player.Ypos++;
+        }
+        else if (e.keyCode === 65 && Map[player.Ypos][player.Xpos-1] != 1) {
+            direction = "left"; //left
+            player.Xpos--;
+        }
+        else if (e.keyCode === 68 && Map[player.Ypos][player.Xpos+1] != 1) {
+            direction = "right"; //right
+            player.Xpos++;
+        }
     }
-    else if (e.keyCode === 83 && Map[player.Ypos+1][player.Xpos] != 1) {
-        direction = "down"; //down
-        player.Ypos++;
-    }
-    else if (e.keyCode === 65 && Map[player.Ypos][player.Xpos-1] != 1) {
-        direction = "left"; //left
-        player.Xpos--;
-    }
-    else if (e.keyCode === 68 && Map[player.Ypos][player.Xpos+1] != 1) {
-        direction = "right"; //right
-        player.Xpos++;
-    }
-
 }
 document.addEventListener('keyup', checkKey);
 
+
+function WinEnd(collected) {
+    if (collected == coin_count) {
+        roundend = true;
+        
+        enemi1.Color = "#ff8"
+        enemi2.Color = "#ff8"
+
+        context.font = "30px Arial";
+        context.fillStyle = "Black";
+        context.fillText("Win", tile_size * (Map.length/2), tile_size * (Map[0].length/2));
+        
+    }
+}
 
 
 
