@@ -12,6 +12,7 @@ canvas.style.background = "#ff8";
 
 var ob_count = 0;
 var coin_count = 0;
+var enemi_count = 0;
 var tile_size = 50;
 var direction = null;
 var counter = 0;
@@ -75,17 +76,18 @@ class Circle {
         this.draw(context);
         
         WinEnd(collected);
+
+        LoseEnd();
     }
 }
 class Enemi {
-    constructor(radius, color, speed ){
+    constructor(radius, color){
 
         this.Xpos = null;
         this.Ypos = null;
 
         this.Radius = radius;
         this.Color = color;
-        this.Speed = speed;
 
         this.dx = 0;
         this.dy = 0;
@@ -117,8 +119,8 @@ class Enemi {
 
         this.draw(context);
         
-        if(Map[this.Ypos + this.dy][this.Xpos] == 0 && this.dy != 0) {}
-        else if(Map[this.Ypos][this.Xpos + this.dx] == 0 && this.dx != 0) {}
+        if(Map[this.Ypos + this.dy][this.Xpos] != 1 && this.dy != 0) {}
+        else if(Map[this.Ypos][this.Xpos + this.dx] != 1 && this.dx != 0) {}
         else this.Rnd = RandomNum(4);
     }
     Movement() { //dx + Xpos
@@ -132,8 +134,8 @@ class Enemi {
         //right
         else if (this.Rnd == 4) this.dx = 1;
 
-        if(Map[this.Ypos + this.dy][this.Xpos] == 0 && this.dy != 0) this.Ypos = this.Ypos + this.dy;
-        else if(Map[this.Ypos][this.Xpos + this.dx] == 0 && this.dx != 0) this.Xpos = this.Xpos + this.dx;
+        if(Map[this.Ypos + this.dy][this.Xpos] != 1 && this.dy != 0) this.Ypos = this.Ypos + this.dy;
+        else if(Map[this.Ypos][this.Xpos + this.dx] != 1 && this.dx != 0) this.Xpos = this.Xpos + this.dx;
         else this.Rnd = RandomNum(4);
     }
 } 
@@ -200,7 +202,8 @@ let RandomNum = function(num) {
 
 
 var object_box = new box();
-var object_coin = new Coins(); 
+var object_coin = new Coins();
+var object_enemi = new Enemi();
 
 function SetMap(Map) {
 
@@ -224,14 +227,7 @@ player = new Circle(22, "black");
 player.spawn();
 player.draw(context);
 
-enemi2 = new Enemi(22, "blue");
-enemi2.spawn();
-enemi2.draw(context);
-
-enemi1 = new Enemi(22, "red");
-enemi1.spawn();
-enemi1.draw(context);
-
+CreateEnemi(2);
 
 SetMap(Map);
 
@@ -257,13 +253,22 @@ let updateCircle = function() {
     context.fillText(coin_count, tile_size * 1.5, tile_size * 0.5);
 
     player.update();
-
-    enemi2.update();
-    enemi1.update();
+    
+    if (roundend == false) {
+        for (let i = 0; i < enemi_count; i++) object_enemi[i].update();
+    }
+    else {
+        for (let i = 0; i < enemi_count; i++) {
+            if (object_enemi[i].Xpos == player.Xpos && object_enemi[i].Ypos == player.Ypos ) {
+                object_enemi[i].update();
+            }
+        }
+    }
 
     if (counter == 100 && roundend == false) {
-        enemi1.Movement();
-        enemi2.Movement();
+        for (let i = 0; i < enemi_count; i++) {
+            object_enemi[i].Movement();
+        }   
         counter = 0;
     }
     else counter++;
@@ -296,18 +301,41 @@ function checkKey(e) {
 }
 document.addEventListener('keyup', checkKey);
 
-
 function WinEnd(collected) {
     if (collected == coin_count) {
         roundend = true;
-        
-        enemi1.Color = "#ff8"
-        enemi2.Color = "#ff8"
 
         context.font = "30px Arial";
         context.fillStyle = "Black";
         context.fillText("Win", tile_size * (Map.length/2), tile_size * (Map[0].length/2));
         
+    }
+}
+
+function LoseEnd() {
+    for (let i = 0; i < enemi_count; i++) {
+        
+        if (object_enemi[i].Xpos == player.Xpos && object_enemi[i].Ypos == player.Ypos) {
+            roundend = true;
+    
+            context.font = "30px Arial";
+            context.fillStyle = "Black";
+            context.fillText("Lose", tile_size * (Map.length/2), tile_size * (Map[0].length/2));
+            
+        }
+
+    }
+}
+
+function CreateEnemi(quantity) {
+
+    for (let i = 0; i < quantity; i++) {
+
+        object_enemi[i] = new Enemi((tile_size/2)-3, "red");       
+        object_enemi[i].spawn();
+        object_enemi[i].draw(context);
+        
+        enemi_count++;
     }
 }
 
