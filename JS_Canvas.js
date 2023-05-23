@@ -20,6 +20,7 @@ var collected = 0;
 var roundendW = true;
 var roundendL = false;
 var score = 0;
+var go = true;
 
 var Colors = ["red", "blue", "green", "purple"];
 
@@ -206,22 +207,81 @@ var object_box = new box();
 var object_coin = new Coins();
 var object_enemi = new Enemi();
 
-Levels();
-
 document.addEventListener('keyup', checkKey);
 
-updateCircle();
+let Int_load = function Load() {
+    if (roundendW == true && roundendL == false) {
+
+        roundendW = false;
+
+        player = new Circle(22, "black");
+        player.spawn();
+        player.draw(context);
 
 
+        enemi_count = 0;
+        ob_count = 0;
+        coin_count = 0;
+        collected = 0;
+
+        CreateEnemi(3, Colors);
+
+        SetMap(Map);
+
+        updateCircle();
+    }
+}
+
+let Int_move = function Move() {
+
+    if (roundendW == true && roundendL == false) {
+        if (go == true) {
+            countdown(3);
+            go = false;
+        }
+
+        setTimeout(Int_load, 3020);
+    }
+    else go = true;
+    
+
+    if (roundendL == false && roundendW == false) {
+        for (let i = 0; i < enemi_count; i++) {
+            object_enemi[i].Movement();
+        }
+        counter = 0;
+    }
+
+    setTimeout(Int_move, 1000);
+}
+setTimeout(Int_move, 3000);
+
+function countdown(num) {
+    var from = num;
+    if (from != 0) {
+        
+        context.clearRect(0,0,window_width,window_height);
+        
+        context.font = "30px Arial";
+        context.fillStyle = "Black";
+        context.textAlign = "center";
+
+        if (score != 0) context.fillText("Next level in " + from,  tile_size * (Map.length/2), tile_size * (Map[0].length/2));
+        else context.fillText("First level in " + from,  tile_size * (Map.length/2), tile_size * (Map[0].length/2));
+        
+        from--;
+        setTimeout(countdown, 1000, from);
+    }
+}
 
 function RandomNum(num) {
 
-    var Random = Math.floor(Math.random() * num) + 1;
+    let Random = Math.floor(Math.random() * num) + 1;
     return Random; 
 }
 
 function Score(collected, score) {
-    var a = collected - 1;
+    let a = collected - 1;
 
     score = score + (collected - a);
     return score;
@@ -243,27 +303,6 @@ function SetMap(Map) {
                 coin_count++;
             }
         }
-    }
-}
-
-function Levels() {
-    if (roundendW == true && roundendL == false) {
-
-        roundendW = false;
-
-        player = new Circle(22, "black");
-        player.spawn();
-        player.draw(context);
-
-
-        enemi_count = 0;
-        ob_count = 0;
-        coin_count = 0;
-        collected = 0;
-
-        CreateEnemi(3, Colors);
-
-        SetMap(Map);
     }
 }
 
@@ -331,9 +370,10 @@ function CreateEnemi(quantity, Colors) {
 }
 
 function updateCircle() {
-    requestAnimationFrame(updateCircle);
 
-    Levels();
+    if (roundendW == false && roundendL == false) {
+    requestAnimationFrame(updateCircle);
+    }
 
     context.clearRect(0, 0, window_width, window_height);
 
@@ -371,14 +411,6 @@ function updateCircle() {
             }
         }
     }
-
-    if (counter == 100 && roundendL == false && roundendW == false) {
-        for (let i = 0; i < enemi_count; i++) {
-            object_enemi[i].Movement();
-        }   
-        counter = 0;
-    }
-    else counter++;
 
     WinEnd(collected);
     LoseEnd();
