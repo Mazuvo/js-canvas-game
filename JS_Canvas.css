@@ -1,4 +1,18 @@
 
   #canvas {
+    position: relative;
     border: 2px solid black;
+  }
+
+  button {
+    visibility: hidden;
+    position: absolute;
+
+    font-weight: bold;
+    text-align: center;
+    background: white;
+    border: 2px solid black;
+  }
+  button:hover {
+    background: rgb(237, 236, 236);
   }

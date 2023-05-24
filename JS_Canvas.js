@@ -5,9 +5,6 @@ let context = canvas.getContext("2d");
 var window_height = window.innerHeight;
 var window_width = window.innerWidth;
 
-canvas.width = window_width;
-canvas.height = window_height;
-
 canvas.style.background = "#ff8";
 
 var ob_count = 0;
@@ -35,6 +32,9 @@ var Map = [
     [1, 0, 0, 0, 0, 0, 0, 0, 1],
     [1, 1, 1, 1, 1, 1, 1, 1, 1]
 ];
+
+canvas.width = Map[0].length * tile_size;
+canvas.height = Map.length * tile_size;
 
 
 class Circle {
@@ -207,6 +207,25 @@ var object_box = new box();
 var object_coin = new Coins();
 var object_enemi = new Enemi();
 
+
+var button = document.createElement("button");
+button.innerHTML = "Restart";
+
+var body = document.getElementsByTagName("body")[0];
+body.appendChild(button);
+button.style.width = tile_size*2 + "px";
+button.style.height = tile_size + "px";
+button.style.top = canvas.height + 10 + "px";
+button.style.left = (canvas.width/2 - tile_size) + 8 + "px";
+
+button.addEventListener ("click", function() {
+  button.style.visibility = "hidden";
+  score = 0;
+  roundendL = false;
+  roundendW = true;
+});
+
+
 document.addEventListener('keyup', checkKey);
 
 let Int_load = function Load() {
@@ -214,7 +233,7 @@ let Int_load = function Load() {
 
         roundendW = false;
 
-        player = new Circle(22, "black");
+        player = new Circle((tile_size * 0.8) /2, "black");
         player.spawn();
         player.draw(context);
 
@@ -254,7 +273,7 @@ let Int_move = function Move() {
 
     setTimeout(Int_move, 1000);
 }
-setTimeout(Int_move, 3000);
+setTimeout(Int_move, 1000);
 
 function countdown(num) {
     var from = num;
@@ -266,8 +285,8 @@ function countdown(num) {
         context.fillStyle = "Black";
         context.textAlign = "center";
 
-        if (score != 0) context.fillText("Next level in " + from,  tile_size * (Map.length/2), tile_size * (Map[0].length/2));
-        else context.fillText("First level in " + from,  tile_size * (Map.length/2), tile_size * (Map[0].length/2));
+        if (score != 0) context.fillText("Next level in " + from,  tile_size * (Map[0].length/2), tile_size * (Map.length/2));
+        else context.fillText("First level in " + from,  tile_size * (Map[0].length/2), tile_size * (Map.length/2));
         
         from--;
         setTimeout(countdown, 1000, from);
@@ -337,7 +356,7 @@ function WinEnd(collected) {
 
         context.font = "30px Arial";
         context.fillStyle = "Black";
-        context.fillText("Win", tile_size * (Map.length/2), tile_size * (Map[0].length/2));
+        context.fillText("Win", tile_size * (Map[0].length/2), tile_size * (Map.length/2));
         
     }
 }
@@ -350,8 +369,8 @@ function LoseEnd() {
     
             context.font = "30px Arial";
             context.fillStyle = "Black";
-            context.fillText("Lose", tile_size * (Map.length/2), tile_size * (Map[0].length/2));
-            
+            context.fillText("Lose", tile_size * (Map[0].length/2), tile_size * (Map.length/2));
+            button.style.visibility = "visible";
         }
 
     }
