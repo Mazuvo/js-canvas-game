@@ -26,10 +26,10 @@ var Colors = ["red", "blue", "green", "purple"];
 var Map = [
     [1, 1, 1, 1, 1, 1, 1, 1, 1],
     [1, 0, 0, 0, 0, 0, 0, 0, 1],
+    [1, 0, 0, 0, 0, 0, 0, 0, 1],
     [1, 0, 1, 0, 0, 0, 0, 0, 1],
     [1, 0, 0, 0, 0, 0, 0, 0, 1],
-    [1, 0, 0, 0, 0, 0, 0, 0, 1],
-    [1, 0, 0, 0, 0, 0, 0, 0, 1],
+    [1, 0, 0, 0, 0, 0, 1, 0, 1],
     [1, 0, 0, 0, 0, 0, 0, 0, 1],
     [1, 0, 0, 0, 0, 0, 0, 0, 1],
     [1, 1, 1, 1, 1, 1, 1, 1, 1]
@@ -50,17 +50,24 @@ class Circle {
         this.SpawnX = []; //up, down, left, right
         this.SpawnY = [];
 
-        this.CornerCheck = [null, null, null, null]; //upL, upR, downL, DownR
+        this.ActPosX = [];
+        this.ActPosY = [];
 
         this.PlayerBox = new box();
+
+        this.hitChech = [null, null, null, null]; //up down left right
         
         this.Figure = [
-            [0, 1, 0],
-            [1, 1, 1],
-            [0, 1, 0]
+            [0, 0, 0, 0, 0],
+            [0, 0, 1, 0, 0],
+            [0, 1, 1, 1, 0],
+            [0, 0, 1, 0, 0],
+            [0, 0, 0, 0, 0]
         ];
         
         this.Scount = 0;
+        this.Actcount = 0
+        this.minus = 0;
     }
     spawn(){
         
@@ -71,15 +78,16 @@ class Circle {
 
         } while(Map[this.Ypos][this.Xpos] != 0)
 
+        this.minus = -1* (this.Figure.length - 1) /2 ;
+
         for (let i = 0; i < this.Figure.length; i++) {
             for (let j = 0; j < this.Figure[0].length; j++) {
     
                 if (this.Figure[i][j] == 1) {
-                    this.SpawnX[this.Scount] = (this.Xpos - 1 + j);
-                    this.SpawnY[this.Scount] = (this.Ypos - 1 + i);
+                    this.SpawnX[this.Scount] = (this.Xpos + this.minus + j);
+                    this.SpawnY[this.Scount] = (this.Ypos + this.minus + i);
                     this.Scount++;
                 }
-    
             }
         }
         this.Scount = 0;
@@ -98,7 +106,7 @@ class Circle {
             for (let j = 0; j < this.Figure[0].length; j++) {
     
                 if (this.Figure[i][j] == 1) {
-                    this.PlayerBox[figCount] = new box((this.Xpos - 1 + j)* tile_size, (this.Ypos - 1 + i) * tile_size, tile_size, tile_size, "black", true);
+                    this.PlayerBox[figCount] = new box((this.Xpos + this.minus + j)* tile_size, (this.Ypos + this.minus + i) * tile_size, tile_size, tile_size, "black", true);
                     this.PlayerBox[figCount].draw(context);
                     figCount++;
                 }
@@ -108,11 +116,46 @@ class Circle {
         for (let i = 0; i < figCount; i++) {
             this.PlayerBox[i].update();
         }
+
+        for (let i = 0; i < this.Figure.length; i++) {
+            for (let j = 0; j < this.Figure[0].length; j++) {
+    
+                if (this.Figure[i][j] == 1 && this.Figure[i-1][j] == 0 || this.Figure[i][j] == 1 && this.Figure[i+1][j] == 0 || this.Figure[i][j] == 1 && this.Figure[i][j-1] == 0 || this.Figure[i][j] == 1 && this.Figure[i][j+1] == 0) {
+                    this.ActPosX[this.Actcount] = (this.Xpos + this.minus + j);
+                    this.ActPosY[this.Actcount] = (this.Ypos + this.minus + i);
+                    this.Actcount++;
+                }
+    
+            }
+        }
+        this.Actcount = 0;
+
+    }
+    hit(){
+
+        this.hitChech[0] = true;
+        this.hitChech[1] = true;
+        this.hitChech[2] = true;
+        this.hitChech[3] = true;
+
+        for (let i = 0; i < this.ActPosX.length; i++) {
+
+            if (Map[this.ActPosY[i]-1][this.ActPosX[i]] == 1) this.hitChech[0] = false;
+            if (Map[this.ActPosY[i]+1][this.ActPosX[i]] == 1) this.hitChech[1] = false;
+
+            if (Map[this.ActPosY[i]][this.ActPosX[i]-1] == 1) this.hitChech[2] = false;
+            if (Map[this.ActPosY[i]][this.ActPosX[i]+1] == 1) this.hitChech[3] = false;
+
+        }
+
     }
     
     update() {
 
         this.draw(context);
+
+        this.hit();
+
     }
 }
 class Enemi {
@@ -400,19 +443,19 @@ function checkKey(e) {
 
     if (roundendW == false && roundendL == false) {
         
-        if (e.keyCode === 87 && Map[player.Ypos-1][player.Xpos] != 1) {
+        if (e.keyCode === 87 && Map[player.Ypos-1][player.Xpos] != 1 && player.hitChech[0] == true) {
             direction = "up"; //up
             player.Ypos--;
         }
-        else if (e.keyCode === 83 && Map[player.Ypos+1][player.Xpos] != 1) {
+        else if (e.keyCode === 83 && Map[player.Ypos+1][player.Xpos] != 1 && player.hitChech[1] == true) {
             direction = "down"; //down
             player.Ypos++;
         }
-        else if (e.keyCode === 65 && Map[player.Ypos][player.Xpos-1] != 1) {
+        else if (e.keyCode === 65 && Map[player.Ypos][player.Xpos-1] != 1 && player.hitChech[2] == true) {
             direction = "left"; //left
             player.Xpos--;
         }
-        else if (e.keyCode === 68 && Map[player.Ypos][player.Xpos+1] != 1) {
+        else if (e.keyCode === 68 && Map[player.Ypos][player.Xpos+1] != 1 && player.hitChech[3] == true) {
             direction = "right"; //right
             player.Xpos++;
         }
