@@ -5,7 +5,8 @@ let context = canvas.getContext("2d");
 var window_height = window.innerHeight;
 var window_width = window.innerWidth;
 
-canvas.style.background = "#ff8";
+var colorBackG = "#ff8";
+canvas.style.background = colorBackG;
 
 var ob_count = 0;
 var coin_count = 0;
@@ -18,17 +19,18 @@ var roundendW = true;
 var roundendL = false;
 var score = 0;
 var go = true;
+var figCount = 0;
 
 var Colors = ["red", "blue", "green", "purple"];
 
 var Map = [
     [1, 1, 1, 1, 1, 1, 1, 1, 1],
     [1, 0, 0, 0, 0, 0, 0, 0, 1],
-    [1, 0, 1, 1, 0, 1, 1, 0, 1],
-    [1, 0, 1, 1, 0, 1, 1, 0, 1],
+    [1, 0, 1, 0, 0, 0, 0, 0, 1],
     [1, 0, 0, 0, 0, 0, 0, 0, 1],
-    [1, 0, 1, 1, 0, 1, 1, 0, 1],
-    [1, 0, 1, 1, 0, 1, 1, 0, 1],
+    [1, 0, 0, 0, 0, 0, 0, 0, 1],
+    [1, 0, 0, 0, 0, 0, 0, 0, 1],
+    [1, 0, 0, 0, 0, 0, 0, 0, 1],
     [1, 0, 0, 0, 0, 0, 0, 0, 1],
     [1, 1, 1, 1, 1, 1, 1, 1, 1]
 ];
@@ -45,9 +47,20 @@ class Circle {
         this.Radius = radius;
         this.Color = color;
 
-        this.SpawnX = 0;
-        this.SpawnY = 0;
+        this.SpawnX = []; //up, down, left, right
+        this.SpawnY = [];
 
+        this.CornerCheck = [null, null, null, null]; //upL, upR, downL, DownR
+
+        this.PlayerBox = new box();
+        
+        this.Figure = [
+            [0, 1, 0],
+            [1, 1, 1],
+            [0, 1, 0]
+        ];
+        
+        this.Scount = 0;
     }
     spawn(){
         
@@ -58,24 +71,45 @@ class Circle {
 
         } while(Map[this.Ypos][this.Xpos] != 0)
 
-        this.SpawnX = this.Xpos;
-        this.SpawnY = this.Ypos;
+        for (let i = 0; i < this.Figure.length; i++) {
+            for (let j = 0; j < this.Figure[0].length; j++) {
+    
+                if (this.Figure[i][j] == 1) {
+                    this.SpawnX[this.Scount] = (this.Xpos - 1 + j);
+                    this.SpawnY[this.Scount] = (this.Ypos - 1 + i);
+                    this.Scount++;
+                }
+    
+            }
+        }
+        this.Scount = 0;
 
     }
     draw(context){
         context.beginPath();
 
-        context.strokeStyle = this.Color;
-        
-        context.textAlign = "center";
-        context.textBaseline = "middle";
-        context.font = "20px Arial";
+        context.strokeStyle = "black";
 
-        context.lineWidth = 5;
-        context.arc((tile_size * (this.Xpos + 0.5)), (tile_size * (this.Ypos + 0.5)), this.Radius, 0, Math.PI *2, false);
         context.stroke();
         context.closePath();
+
+        figCount = 0;
+        for (let i = 0; i < this.Figure.length; i++) {
+            for (let j = 0; j < this.Figure[0].length; j++) {
+    
+                if (this.Figure[i][j] == 1) {
+                    this.PlayerBox[figCount] = new box((this.Xpos - 1 + j)* tile_size, (this.Ypos - 1 + i) * tile_size, tile_size, tile_size, "black", true);
+                    this.PlayerBox[figCount].draw(context);
+                    figCount++;
+                }
+    
+            }
+        }
+        for (let i = 0; i < figCount; i++) {
+            this.PlayerBox[i].update();
+        }
     }
+    
     update() {
 
         this.draw(context);
@@ -95,15 +129,22 @@ class Enemi {
         
         this.Rnd = RandomNum(4);
 
+        this.PosIsOk = false;
+
     }
     spawn(){
         
         do {
+            this.PosIsOk = true;
+            for(let i = 0; i < player.SpawnX.length; i++) {
+                
+                if (player.SpawnX[i] == this.Xpos && player.SpawnY[i] == this.Ypos) this.PosIsOk = false;
+            }
 
             this.Xpos = RandomNum(Map[0].length -1);
             this.Ypos = RandomNum(Map.length -1);
 
-        } while(Map[this.Ypos][this.Xpos] != 0 || this.Ypos == player.SpawnY && this.Xpos == player.SpawnX)
+        } while(Map[this.Ypos][this.Xpos] != 0 || this.PosIsOk == false)
 
 
     }
@@ -149,20 +190,25 @@ class Enemi {
     }
 } 
 class box {
-    constructor(xpos, ypos, height, width, color){
+    constructor(xpos, ypos, height, width, color, fill){
 
         this.Xpos = xpos;
         this.Ypos = ypos;
         this.Height = height;
         this.Width = width;
         this.Color = color;
+        this.Fill = fill;
     }
     draw(context){
         context.beginPath();
 
         context.strokeStyle = this.Color;
+        context.fillStyle = this.Color;
         context.lineWidth = 5;
-        context.rect(this.Xpos, this.Ypos, this.Width, this.Height);
+
+        if (this.Fill == true) context.fillRect(this.Xpos, this.Ypos, this.Width, this.Height);
+
+        else context.rect(this.Xpos, this.Ypos, this.Width, this.Height);
         context.stroke();
         context.closePath();
 
@@ -187,7 +233,7 @@ class Coins {
         context.beginPath();
 
         if (this.Picked == false) context.fillStyle = "pink";
-        else context.fillStyle = "#ff8";
+        else context.fillStyle = "rgba(0, 0, 0, 0.0)";
         
 
         context.arc((tile_size * (this.Xpos + 0.5)), (tile_size * (this.Ypos + 0.5)), 5, 0, Math.PI *2, false);
@@ -197,8 +243,12 @@ class Coins {
     update(){
         this.draw(context);
 
-        if (this.Xpos == player.Xpos && this.Ypos == player.Ypos) this.Picked = true;
-
+        for (let i = 0; i < figCount; i++) {
+            
+            if (this.Xpos == player.PlayerBox[i].Xpos / tile_size && this.Ypos == player.PlayerBox[i].Ypos / tile_size) {
+                this.Picked = true;
+            }
+        }
     }
 
 }
@@ -225,7 +275,6 @@ button.addEventListener ("click", function() {
   roundendW = true;
 });
 
-
 document.addEventListener('keyup', checkKey);
 
 let Int_load = function Load() {
@@ -243,7 +292,7 @@ let Int_load = function Load() {
         coin_count = 0;
         collected = 0;
 
-        CreateEnemi(3, Colors);
+        CreateEnemi(0, Colors);
 
         SetMap(Map);
 
@@ -293,6 +342,16 @@ function countdown(num) {
     }
 }
 
+function oneCount(array) {
+    let count = 0;
+    for (let i = 0; i < array.length; i++) {
+        for (let j = 0; j < array[0].left; i++) {
+            if (array[i][j] == 1) count++;
+        }
+    }
+    return count;
+}
+
 function RandomNum(num) {
 
     let Random = Math.floor(Math.random() * num) + 1;
@@ -311,15 +370,25 @@ function SetMap(Map) {
     for (let i = 0; i < Map.length; i++) {
         for (let j = 0; j < Map[0].length; j++) {
             if (Map[i][j] == 1) {
-                object_box[ob_count] = new box(j*tile_size, i*tile_size, tile_size, tile_size, "orange");
+                object_box[ob_count] = new box(j*tile_size, i*tile_size, tile_size, tile_size, "orange", false);
                 object_box[ob_count].draw(context);
                 ob_count++;
             }
-            if (Map[i][j] != 1 && i != player.Ypos || Map[i][j] != 1 && j != player.Xpos) {
+            if (Map[i][j] != 1 ) {
                 Map[i][j] = 0;
-                object_coin[coin_count] = new Coins( j, i);
-                object_coin[coin_count].draw(context);
-                coin_count++;
+                
+                let CoinPosOk = true;
+                for(let k = 0; k < player.SpawnX.length; k++) {
+                
+                    if (player.SpawnY[k] == i && player.SpawnX[k] == j) CoinPosOk = false;
+    
+                }
+                if (CoinPosOk == true) {
+                    object_coin[coin_count] = new Coins( j, i);
+                    object_coin[coin_count].draw(context);
+                    coin_count++;
+                }
+                CoinPosOk = true;
             }
         }
     }
