@@ -11,7 +11,9 @@ canvas.style.background = colorBackG;
 var ob_count = 0;
 var coin_count = 0;
 var enemi_count = 0;
-var tile_size = 50;
+var block_size = 40;
+var tile_amount = 9;
+var halfTile = Math.floor(Math.sqrt(tile_amount) / 2);
 var direction = null;
 var counter = 0;
 var collected = 0;
@@ -27,16 +29,25 @@ var Map = [
     [1, 1, 1, 1, 1, 1, 1, 1, 1],
     [1, 0, 0, 0, 0, 0, 0, 0, 1],
     [1, 0, 0, 0, 0, 0, 0, 0, 1],
-    [1, 0, 1, 0, 0, 0, 0, 0, 1],
     [1, 0, 0, 0, 0, 0, 0, 0, 1],
-    [1, 0, 0, 0, 0, 0, 1, 0, 1],
+    [1, 0, 0, 0, 1, 0, 0, 0, 1],
     [1, 0, 0, 0, 0, 0, 0, 0, 1],
     [1, 0, 0, 0, 0, 0, 0, 0, 1],
+    [1, 0, 0, 0, 0, 0, 0, 0, 1], 
+    [1, 1, 1, 0, 0, 0, 1, 1, 1],
+    [1, 1, 1, 0, 0, 0, 1, 1, 1],
+    [1, 0, 0, 0, 0, 0, 0, 0, 1],
+    [1, 0, 0, 0, 0, 0, 0, 0, 1],
+    [1, 0, 0, 0, 0, 0, 0, 0, 1],
+    [1, 0, 0, 0, 1, 0, 0, 0, 1],
+    [1, 0, 0, 0, 0, 0, 0, 0, 1],
+    [1, 0, 0, 0, 0, 0, 0, 0, 1],
+    [1, 0, 0, 0, 0, 0, 0, 0, 1], 
     [1, 1, 1, 1, 1, 1, 1, 1, 1]
 ];
 
-canvas.width = Map[0].length * tile_size;
-canvas.height = Map.length * tile_size;
+canvas.width = Map[0].length * block_size;
+canvas.height = Map.length * block_size;
 
 
 class Circle {
@@ -70,27 +81,38 @@ class Circle {
         this.minus = 0;
     }
     spawn(){
-        
+        let check = true;
         do {
+            check = true;
 
             this.Xpos = RandomNum(Map[0].length -1);
             this.Ypos = RandomNum(Map.length -1);
 
-        } while(Map[this.Ypos][this.Xpos] != 0)
+            this.minus = -1* (this.Figure.length - 1) /2 ;
 
-        this.minus = -1* (this.Figure.length - 1) /2 ;
-
-        for (let i = 0; i < this.Figure.length; i++) {
-            for (let j = 0; j < this.Figure[0].length; j++) {
+            for (let i = 0; i < this.Figure.length; i++) {
+                for (let j = 0; j < this.Figure[0].length; j++) {
     
-                if (this.Figure[i][j] == 1) {
-                    this.SpawnX[this.Scount] = (this.Xpos + this.minus + j);
-                    this.SpawnY[this.Scount] = (this.Ypos + this.minus + i);
-                    this.Scount++;
+                    if (this.Figure[i][j] == 1) {
+                        this.SpawnX[this.Scount] = (this.Xpos + this.minus + j);
+                        this.SpawnY[this.Scount] = (this.Ypos + this.minus + i);
+                        this.Scount++;
+                    }
                 }
             }
-        }
-        this.Scount = 0;
+            this.Scount = 0;
+
+            if (Map[this.Ypos][this.Xpos] == 0) {
+
+                for (let i = 0; i < this.SpawnX.length; i++) {
+
+                    if (this.SpawnY[i] >= Map.length || this.SpawnY[i] <= 0 || this.SpawnX[i] >= Map[0].length || this.SpawnX[i] <= 0) check = false;
+
+                    else if(Map[this.SpawnY[i]][this.SpawnX[i]] == undefined || Map[this.SpawnY[i]][this.SpawnX[i]] != 0) check = false;
+                }
+            }
+
+        } while(Map[this.Ypos][this.Xpos] != 0 || check == false)
 
     }
     draw(context){
@@ -106,7 +128,7 @@ class Circle {
             for (let j = 0; j < this.Figure[0].length; j++) {
     
                 if (this.Figure[i][j] == 1) {
-                    this.PlayerBox[figCount] = new box((this.Xpos + this.minus + j)* tile_size, (this.Ypos + this.minus + i) * tile_size, tile_size, tile_size, "black", true);
+                    this.PlayerBox[figCount] = new box((this.Xpos + this.minus + j)* block_size, (this.Ypos + this.minus + i) * block_size, block_size, block_size, "black", true);
                     this.PlayerBox[figCount].draw(context);
                     figCount++;
                 }
@@ -196,7 +218,7 @@ class Enemi {
 
         context.fillStyle = this.Color;
 
-        context.arc((tile_size * (this.Xpos + 0.5)), (tile_size * (this.Ypos + 0.5)), this.Radius, 0, Math.PI *2, false);
+        context.arc((block_size * (this.Xpos + 0.5)), (block_size * (this.Ypos + 0.5)), this.Radius, 0, Math.PI *2, false);
         context.fill();
         context.closePath();
     }
@@ -279,7 +301,7 @@ class Coins {
         else context.fillStyle = "rgba(0, 0, 0, 0.0)";
         
 
-        context.arc((tile_size * (this.Xpos + 0.5)), (tile_size * (this.Ypos + 0.5)), 5, 0, Math.PI *2, false);
+        context.arc((block_size * (this.Xpos + 0.5)), (block_size * (this.Ypos + 0.5)), block_size / 10, 0, Math.PI *2, false);
         context.fill();
         context.closePath();
     }
@@ -288,7 +310,7 @@ class Coins {
 
         for (let i = 0; i < figCount; i++) {
             
-            if (this.Xpos == player.PlayerBox[i].Xpos / tile_size && this.Ypos == player.PlayerBox[i].Ypos / tile_size) {
+            if (this.Xpos == player.PlayerBox[i].Xpos / block_size && this.Ypos == player.PlayerBox[i].Ypos / block_size) {
                 this.Picked = true;
             }
         }
@@ -306,10 +328,10 @@ button.innerHTML = "Restart";
 
 var body = document.getElementsByTagName("body")[0];
 body.appendChild(button);
-button.style.width = tile_size*2 + "px";
-button.style.height = tile_size + "px";
+button.style.width = block_size*2 + "px";
+button.style.height = block_size + "px";
 button.style.top = canvas.height + 10 + "px";
-button.style.left = (canvas.width/2 - tile_size) + 8 + "px";
+button.style.left = (canvas.width/2 - block_size) + 8 + "px";
 
 button.addEventListener ("click", function() {
   button.style.visibility = "hidden";
@@ -325,7 +347,7 @@ let Int_load = function Load() {
 
         roundendW = false;
 
-        player = new Circle((tile_size * 0.8) /2, "black");
+        player = new Circle((block_size * 0.8) /2, "black");
         player.spawn();
         player.draw(context);
 
@@ -377,8 +399,8 @@ function countdown(num) {
         context.fillStyle = "Black";
         context.textAlign = "center";
 
-        if (score != 0) context.fillText("Next level in " + from,  tile_size * (Map[0].length/2), tile_size * (Map.length/2));
-        else context.fillText("First level in " + from,  tile_size * (Map[0].length/2), tile_size * (Map.length/2));
+        if (score != 0) context.fillText("Next level in " + from,  block_size * (Map[0].length/2), block_size * (Map.length/2));
+        else context.fillText("First level in " + from,  block_size * (Map[0].length/2), block_size * (Map.length/2));
         
         from--;
         setTimeout(countdown, 1000, from);
@@ -413,14 +435,26 @@ function SetMap(Map) {
     for (let i = 0; i < Map.length; i++) {
         for (let j = 0; j < Map[0].length; j++) {
             if (Map[i][j] == 1) {
-                object_box[ob_count] = new box(j*tile_size, i*tile_size, tile_size, tile_size, "orange", false);
+                object_box[ob_count] = new box(j*block_size, i*block_size, block_size, block_size, "orange", false);
                 object_box[ob_count].draw(context);
                 ob_count++;
             }
             if (Map[i][j] != 1 ) {
-                Map[i][j] = 0;
+                //Map[i][j] = 0;
                 
                 let CoinPosOk = true;
+                
+                for (let k = 0; k <= halfTile; k++) {
+                    for (let l = 0; l <= halfTile; l++) {
+
+                        if (Map[i-k][j-l] != 0 || Map[i+k][j+l] != 0 || Map[i+k][j-l] != 0 || Map[i-k][j+l] != 0) {
+                            CoinPosOk = false;
+                        }
+                    }
+                }
+                if (CoinPosOk == true) Map[i][j] = 4;
+                else continue;
+
                 for(let k = 0; k < player.SpawnX.length; k++) {
                 
                     if (player.SpawnY[k] == i && player.SpawnX[k] == j) CoinPosOk = false;
@@ -466,9 +500,11 @@ function WinEnd(collected) {
     if (collected == coin_count && roundendL == false) {
         roundendW = true;
 
+        ClearMap();
+
         context.font = "30px Arial";
         context.fillStyle = "Black";
-        context.fillText("Win", tile_size * (Map[0].length/2), tile_size * (Map.length/2));
+        context.fillText("Win", block_size * (Map[0].length/2), block_size * (Map.length/2));
         
     }
 }
@@ -481,10 +517,22 @@ function LoseEnd() {
     
             context.font = "30px Arial";
             context.fillStyle = "Black";
-            context.fillText("Lose", tile_size * (Map[0].length/2), tile_size * (Map.length/2));
+            context.fillText("Lose", block_size * (Map[0].length/2), block_size * (Map.length/2));
             button.style.visibility = "visible";
         }
 
+    }
+}
+
+function ClearMap() {
+    if (roundendW = true) {
+
+        for (let i = 0; i < Map.length; i++) {
+            for (let j = 0; j < Map[0].length; j++) {
+                
+                if (Map[i][j] != 0 && Map[i][j] != 1) Map[i][j] = 0;
+            }
+        }
     }
 }
 
@@ -492,7 +540,7 @@ function CreateEnemi(quantity, Colors) {
 
     for (let i = 0; i < quantity; i++) {
 
-        object_enemi[i] = new Enemi((tile_size/2)-3, Colors[i]);       
+        object_enemi[i] = new Enemi((block_size/2)-3, Colors[i]);       
         object_enemi[i].spawn();
         object_enemi[i].draw(context);
         
@@ -526,9 +574,9 @@ function updateCircle() {
 
     context.font = "30px Arial";
     context.fillStyle = "Black";
-    context.fillText(collected, tile_size * 0.5, tile_size * 0.5);
-    context.fillText(coin_count, tile_size * 1.5, tile_size * 0.5);
-    context.fillText("Score: " + score, tile_size * (Map[0].length/2), tile_size * 0.5);
+    context.fillText(collected, block_size * 0.5, block_size * 0.5);
+    context.fillText(coin_count, block_size * 1.5, block_size * 0.5);
+    context.fillText("Score: " + score, block_size * (Map[0].length/2), block_size * 0.5);
 
     player.update();
     
